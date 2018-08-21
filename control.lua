@@ -21,7 +21,7 @@ end)
 
 local function update_PSC(unit_number,tick,player)
     if global.PSC_entity == nil or global.PSC_entity[unit_number] == nil then
-        player.print("update nil")
+        -- player.print("update nil")
         return
     end
     local obj = global.PSC_entity[unit_number]
@@ -31,6 +31,9 @@ local function update_PSC(unit_number,tick,player)
     end
     local power = main_entity.electric_network_statistics
     local output = obj.combinator
+    if output.valid == false then
+        return
+    end
     local control = output.get_or_create_control_behavior()
     control.enabled = true
 
@@ -112,14 +115,17 @@ local function on_built(event)
                     end
                 end
             end
+
+        local p2 = {x = position.x + 0.5,y = position.y}
         
         if outcom == nil then
             outcom = surface.create_entity({ name = "PSC-constant-combinator", 
-                                        position = position, force = force, 
+                                        position = p2, force = force, 
                                         fast_replace = true, player = player})
         end
         outcom.last_user = player
         outcom.operable = false
+        outcom.minable = false
 
         -- local input_id = defines.circuit_connector_id.combinator_input
 	    -- local output_id = defines.circuit_connector_id.combinator_output
@@ -133,13 +139,12 @@ local function on_built(event)
                 main_entity = main_entity,  
                 combinator = outcom
             }
-
-        player.print(main_entity.unit_number)
     end
 end
 
 local function on_death(event)
-	local main_entity = event.entity
+    local main_entity = event.entity
+    -- player.print("death "..main_entity.name)
 	if main_entity.name == "CW-power-combinator" then
 		
 		if global.PSC_entity[main_entity.unit_number] ~= nil then
@@ -150,8 +155,28 @@ local function on_death(event)
 	end
 end
 
+local function on_mined(event)
+	local main_entity = event.entity
+	local player = main_entity.last_user
+	local control = main_entity.get_or_create_control_behavior()
+    
+    -- player.print("mined "..main_entity.name)
+
+	if main_entity.name == "PSC-interface" then
+		if global.PSC_entity[main_entity.unit_number] ~= nil then
+			global.PSC_entity[main_entity.unit_number].combinator.destroy()
+			global.PSC_entity[main_entity.unit_number] = nil
+		end		
+	end
+end
+
+
+
 
 local build_events = {defines.events.on_built_entity, defines.events.on_robot_built_entity}
 script.on_event(build_events, on_built)
 
 script.on_event(defines.events.on_entity_died, on_death)
+
+local remove_events = {defines.events.on_player_mined_entity, defines.events.on_robot_mined_entity}
+script.on_event(remove_events, on_mined)
