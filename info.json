@@ -1,0 +1,12 @@
+{
+    "name": "PowerStatsCircuit",
+    "version": "0.0.1",
+    "title": "Power Statistics Circuit Interface",
+    "author": "the1killer",
+    "contact": "https://github.com/captnwalker1/",
+    "homepage": "https://github.com/captnwalker1/",
+    "description": "A placeable interface to get circuit network statistics",
+    "license": "MIT",
+    "factorio_version": "0.16",
+    "dependencies": ["base >= 0.16.0"]
+}
