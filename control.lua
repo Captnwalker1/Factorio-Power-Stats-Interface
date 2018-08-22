@@ -51,11 +51,27 @@ local function update_PSC(unit_number,tick,player)
         i = i+1
         local last = obj.stats[name]
         local time = tick-obj.last_update_tick
-        local kwatts = ((pwr-last)/(time/60)) / 1000
+
+        if time < 1 then
+            -- print("time lt 1"..time)
+            time = 1
+        end
+
+        local kwatts = ((pwr-last)/(time/60.0)) / 1000.0
+        if kwatts < 0 or kwatts == 0/0 then
+            -- player.print("kwatts nan"..kwatts)
+            kwatts = 0.0
+        end
+
+        obj.last_update_tick = tick
 
         local sig = {type = "item", name = name}
-		control.set_signal(i, {signal = sig, count = kwatts})
+        control.set_signal(i, {signal = sig, count = kwatts})
+        
     end
+
+    obj.last_update_tick = tick
+    obj.stats = power.output_counts
 end
 
 script.on_event(defines.events.on_tick, function(event)
